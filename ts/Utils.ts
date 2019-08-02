@@ -1,7 +1,7 @@
 export class Utils {
     private _VERSION:string = "v1.0.0"
     private _INFO:object = {
-        author:"肖均",
+        author:"肖秋均",
         version:this._VERSION,
         email: "1075095689@qq.com",
         blog:"www.xiaoqiujun.com"
