@@ -3,7 +3,7 @@
  * @version v1.0.0
  * @author XiaoQiuJun
  * @github https://github.com/xiaoqiujun
- * @Update 2019-6-15 22:43:26
+ * @Update 2019-8-8 11:27:19
  */
 export class Utils {
     private _VERSION: string = "v1.0.0"
@@ -178,6 +178,33 @@ export class Utils {
         }
         return false;
     }
+
+    /**
+     * @description 返回object自身可枚举属性
+     * @param obj {object} 接收一个object数据
+     * @example toKeys({a:1,b:2}) => ["a", "b"]
+     */
+    public toKeys(obj:any):Array<string> {
+        if(!this.isObject(obj)) return [];
+        let keys:Array<string> = [];
+        for(let key in obj) {
+            keys.push(key);
+        }
+        return keys;
+    }
+    /**
+     * @description 返回object自身可枚举属性值
+     * @param obj {object} 接收一个object数据
+     * @example toKeys({a:1,b:2,c:{d:3}}) => [1,2,{d:3}]
+     */
+    public toValues(obj:any):Array<string> {
+        if(!this.isObject(obj)) return [];
+        let values:Array<any> = [];
+        for(let key in obj) {
+            values.push(obj[key]);
+        }
+        return values;
+    }
     /**
      * @description 对象深拷贝
      * @param obj any 引用数据类型 Array Object
@@ -261,6 +288,44 @@ export class Utils {
         return _arr.join("");
     }
     /**
+     * @description 首字母大写
+     * @param str string 接收一个字符串
+     * @return string 返回一个字符串
+     * @example toFirstUpper("abc") => Abc toFirstUpper("ABC") => ABC
+     */
+    public toFirstUpper(str:string):string {
+        str = this.trim(str);
+        return this.toUpperCase(str.slice(0, 1)) + str.slice(1);
+    }
+    /**
+     * @description 首字母小写
+     * @param str string 接收一个字符串
+     * @return string 返回一个字符串
+     * @example toFirstUpper("abc") => abc toFirstUpper("ABC") => aBC
+     */
+    public toFirstLower(str:string):string {
+        str = this.trim(str);
+        return this.toLowerCase(str.slice(0, 1)) + str.slice(1);
+    }
+    /**
+     * @description 将字符串，数字或者数组进行反序输出
+     * @param v {any}
+     * @example reverse("abcdef") => "fedcba"
+     */
+    public reverse(v:any):Array<any>|string|number|null {
+        if(this.isArray(v)) {
+            return v.reverse();
+        }else if(this.isNumber(v) || this.isString(v)) {
+            let arr:Array<any> = ("" + v).split("");
+            let result:string|number = "";
+            for(let i:number = arr.length - 1; i >= 0; i--) {
+                result += arr[i];
+            }
+           return this.isNumber(v) ? Number(result) : result;
+        }
+        return null;
+    }
+    /**
      * @description 生成简单随机数
      * @param lower number 默认是 0
      * @param upper number 默认是 1
@@ -317,6 +382,54 @@ export class Utils {
             }
         }
         return flag;
+    }
+    /**
+     * @description 是否IOS
+     * @return boolean 返回一个boolean值
+     * @example isIOS() => false|true
+     */
+    public isIOS():boolean {
+        let userAgentInfo: string = navigator.userAgent;
+        if(userAgentInfo.indexOf("iPhone") > -1) {
+            return true;
+        }
+        return false;
+    }
+    /**
+     * @description 是否Android
+     * @return boolean 返回一个boolean值
+     * @example isAndroid() => false|true
+     */
+    public isAndroid():boolean {
+        let userAgentInfo:string = navigator.userAgent;
+        if(userAgentInfo.indexOf("Android") > -1 || userAgentInfo.indexOf("Linux") > -1) {
+            return true;
+        }
+        return false;
+    }
+    /**
+     * @description 是否iPad
+     * @return boolean 返回一个boolean值
+     * @example isiPad() => false|true
+     */
+    public isIpad():boolean {
+        let userAgentInfo:string = navigator.userAgent;
+        if(userAgentInfo.indexOf("iPad") > -1) {
+            return true;
+        }
+        return false;
+    }
+    /**
+     * @description 是否iPad
+     * @return boolean 返回一个boolean值
+     * @example isiPad() => false|true
+     */
+    public isWPhone():boolean {
+        let userAgentInfo:string = navigator.userAgent;
+        if(userAgentInfo.indexOf("Windows Phone") > -1) {
+            return true;
+        }
+        return false;
     }
     /**
      * @description 获取浏览器类型
@@ -643,11 +756,70 @@ export class Utils {
     /**
      * @description 删除数组某个元素
      * @param arr array 支持混合数组 number[] string[] object[]
-     * @param item any 类型类型
+     * @param item any 数组中的某个元素
      * @return array 返回一个数组类型
-     * @example remove([1,2,3,4], 3) => [1,2,4]
+     * @example remove([1,2,3,4], 3) => [3]
      */
     public remove(arr: Array<any>, item: any): Array<any> {
+        let index:number = this.contains(arr, item);
+        if(index !== -1) {
+           return arr.splice(index, 1);
+        }
         return [];
+    }
+
+    /**
+     * @description 对url做简单解析成object
+     * @param url {string} url地址 注意:对url参数不做正则判断
+     * @example urlParse("http:127.0.0.1:8080?type=1&id=123&name=zhangsan") => {url: "http:127.0.0.1:8080", type: "1", id: "123", name: "zhangsan"}
+     */
+    public urlParse(url:string):any {
+        let urlObj:any = {};
+        let split:Array<string> = url.split("?");
+        if(split.length === 1) 
+            return split[0];
+        if(split.length === 2) {
+            urlObj["url"] = split[0];
+            let param:Array<string> = split[1].split("&");
+            if(param.length > 1) {
+                for(let i:number = 0; i < param.length; i++) {
+                    let _param:Array<string> = param[i].split("=");
+                    if(_param.length === 2) {
+                        urlObj[_param[0]] = _param[1];
+                    }
+                }
+            }
+        }
+        return urlObj;
+    }
+    public urlStringify():any {
+        return "";
+    }
+    /**
+     * @description 获取随机验证码
+     * @param count {number} 生成随机码的个数 默认是4
+     * @example getVerifyCode(4) => 4sGa 
+     */
+    public getVerifyCode(count:number = 4):string {
+        let strAll:string = "azxcvbnmsdfghjklqwertyuiopZXCVBNMASDFGHJKLQWERTYUIOP0123456789";
+        let newStr:string = "";
+        for(let i:number = 0; i < count; i++) {
+            let index:number = Math.floor(Math.random() * strAll.length);
+            newStr += strAll.charAt(index);
+        }
+        return newStr;
+    }
+    /**
+     * @description 生成唯一的UID
+     * @example createUID() => 5d33b0fc-692d-41eb-e703-4aa76ab08f
+     */
+    public createUID():string {
+        let uniqid:string = "";
+        let rule:string = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxx";
+        uniqid = rule.replace(/[xy]/g, function(rep:string) {
+            let num:number = 16 * Math.random() | 0;
+            return ("x" === rep ? num : 3 && num | 8).toString(16);
+        });
+        return uniqid;
     }
 }
